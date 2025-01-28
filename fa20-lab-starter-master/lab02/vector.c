@@ -19,7 +19,7 @@ static void allocation_failed() {
 }
 
 /* Bad example of how to create a new vector */
-vector_t *bad_vector_new() {
+vector_t *bad_vector_new() { 
     /* Create the vector and a pointer to it */
     vector_t *retval, v;
     retval = &v;
@@ -34,6 +34,7 @@ vector_t *bad_vector_new() {
     retval->data[0] = 0;
     return retval;
 }
+
 
 /* Another suboptimal way of creating a vector */
 vector_t also_bad_vector_new() {
