@@ -59,7 +59,7 @@ vector_t *vector_new() {
     vector_t *retval;
 
     /* First, we need to allocate memory on the heap for the struct */
-    retval = malloc(sizeof(vector_t));/* YOUR CODE HERE */
+    retval = (vector_t*)malloc(sizeof(vector_t));/* YOUR CODE HERE */
 
     /* Check our return value to make sure we got memory */
     if (retval == NULL/* YOUR CODE HERE */) {
@@ -70,7 +70,7 @@ vector_t *vector_new() {
        Since retval->data should be able to dynamically grow,
        what do you need to do? */
     retval->size = 1/* YOUR CODE HERE */;
-    retval->data = malloc(sizeof(int));/* YOUR CODE HERE */;
+    retval->data = (int*)malloc(sizeof(int));/* YOUR CODE HERE */;
 
     /* Check the data attribute of our vector to make sure we got memory */
     if (retval->data == NULL/* YOUR CODE HERE */) {
@@ -79,7 +79,7 @@ vector_t *vector_new() {
     }
 
     /* Complete the initialization by setting the single component to zero */
-    /* YOUR CODE HERE */ = 0;
+    /* YOUR CODE HERE */*(retval->data) = 0;
 
     /* and return... */
     return retval;
@@ -97,8 +97,8 @@ int vector_get(vector_t *v, size_t loc) {
     /* If the requested location is higher than we have allocated, return 0.
      * Otherwise, return what is in the passed location.
      */
-    if (loc < /* YOUR CODE HERE */) {
-        return /* YOUR CODE HERE */;
+    if (loc < v->size/* YOUR CODE HERE */) {
+        return *(v->data + loc)/* YOUR CODE HERE */;
     } else {
         return 0;
     }
@@ -108,6 +108,8 @@ int vector_get(vector_t *v, size_t loc) {
    Remember, you need to free up ALL the memory that was allocated. */
 void vector_delete(vector_t *v) {
     /* YOUR SOLUTION HERE */
+    free(v->data);
+    free(v);
 }
 
 /* Set a value in the vector. If the extra memory allocation fails, call
@@ -118,4 +120,22 @@ void vector_set(vector_t *v, size_t loc, int value) {
      */
 
     /* YOUR SOLUTION HERE */
+    if (loc >= v->size)
+    {
+        int* temp_v = (int*)malloc((loc+1)*sizeof(int)); 
+        if (temp_v == NULL) {
+            // 处理内存分配失败，例如返回或退出
+            return;
+        }
+        memcpy(temp_v,v->data,v->size*sizeof(int));
+        free(v->data);
+        v->data=temp_v;
+        v->data[loc]=value;
+        v->size=loc+1;
+    }
+    else 
+    {
+        v->size+=1;
+        v->data[loc]=value;
+    }
 }
