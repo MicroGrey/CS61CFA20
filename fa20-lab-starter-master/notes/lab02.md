@@ -133,7 +133,7 @@ clean:
     rm -f $(OBJECTS) $(TARGET)
 ```
 
-### 下一步行动：
+### 行动：
 1. 新建 `Makefile` 文件（无后缀）
 2. 复制上方模板
 3. 终端执行 `make`
