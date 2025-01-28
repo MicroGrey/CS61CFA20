@@ -34,7 +34,7 @@ vector_t *bad_vector_new() {
     retval->data[0] = 0;
     return retval;
 }
-
+// v是在stack上分配的，会在函数结束时被清楚
 
 /* Another suboptimal way of creating a vector */
 vector_t also_bad_vector_new() {
@@ -59,21 +59,21 @@ vector_t *vector_new() {
     vector_t *retval;
 
     /* First, we need to allocate memory on the heap for the struct */
-    retval = /* YOUR CODE HERE */
+    retval = malloc(sizeof(vector_t));/* YOUR CODE HERE */
 
     /* Check our return value to make sure we got memory */
-    if (/* YOUR CODE HERE */) {
+    if (retval == NULL/* YOUR CODE HERE */) {
         allocation_failed();
     }
 
     /* Now we need to initialize our data.
        Since retval->data should be able to dynamically grow,
        what do you need to do? */
-    retval->size = /* YOUR CODE HERE */;
-    retval->data = /* YOUR CODE HERE */;
+    retval->size = 1/* YOUR CODE HERE */;
+    retval->data = malloc(sizeof(int));/* YOUR CODE HERE */;
 
     /* Check the data attribute of our vector to make sure we got memory */
-    if (/* YOUR CODE HERE */) {
+    if (retval->data == NULL/* YOUR CODE HERE */) {
         free(retval);				//Why is this line necessary?
         allocation_failed();
     }
