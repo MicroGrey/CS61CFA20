@@ -27,3 +27,23 @@
 -  “Trace” 按钮将基于指定格式的寄存器和内存中转储值.
 
 ![](lab03/venus.png)  
+
+## Exercise 01
+
+1) What do the .data, .word, .text directives mean (i.e. what do you use them for)? Hint: think about the 4 sections of memory.
+   > .data定义数据段；.word定义常量，被储存到数据vduan中，.text定义代码段
+2) Run the program to completion. What number did the program output? What does this number represent?
+   > 34，费波那契数列第九项
+3) At what address is n stored in memory? Hint: Look at the contents of the registers.
+   > 0x10000008
+4) Without actually editing the code (i.e. without going into the “Editor” tab), have the program calculate the 13th fib number (0-indexed) by manually modifying the value of a register. You may find it helpful to first step through the code. If you prefer to look at decimal values, change the “Display Settings” option at the bottom.
+   > 233，修改9为13
+
+## Exercise 02
+Find/explain the following components of this assembly file.
+
+   - The register representing the variable k.
+   - The register representing the variable sum.
+   - The registers acting as pointers to the source and dest arrays.
+   - The assembly code for the loop found in the C code.
+   - How the pointers are manipulated in the assembly code.
