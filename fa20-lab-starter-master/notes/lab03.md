@@ -25,3 +25,5 @@
   - 在 “Memory” 选项卡中，使用 “Jump to” 或 “Address” boxes 快速导航到程序中的某个地址。
 - 对于所有菜单，请使用窗格底部的 “Display Settings” 在16进制、ASCII、two’s complement decimal和unsigned decimal interpretations之间切换。
 -  “Trace” 按钮将基于指定格式的寄存器和内存中转储值.
+
+![](lab03/venus.png)  
