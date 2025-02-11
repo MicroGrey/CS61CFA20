@@ -22,3 +22,10 @@ main:
 
 factorial:
     # YOUR CODE HERE
+    add a1, x0, a0
+    addi a2, x0, 1
+loop:
+	addi a1, a1, -1
+	mul a0, a0, a1
+    bne a1, a2, loop
+    jr ra

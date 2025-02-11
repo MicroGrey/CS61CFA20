@@ -43,7 +43,44 @@
 Find/explain the following components of this assembly file.
 
    - The register representing the variable k.
+      > t0
    - The register representing the variable sum.
+      >  s0
    - The registers acting as pointers to the source and dest arrays.
+      > sp 
    - The assembly code for the loop found in the C code.
+       ```rsicv
+          loop:
+            slli s3, t0, 2
+            add t1, s1, s3
+            lw t2, 0(t1)
+            beq t2, x0, exit
+            add a0, x0, t2
+            addi sp, sp, -8
+            sw t0, 0(sp)
+            sw t2, 4(sp)
+            jal fun
+            lw t0, 0(sp)
+            lw t2, 4(sp)
+            addi sp, sp, 8
+            add t2, x0, a0
+            add t3, s2, s3
+            sw t2, 0(t3)
+            add s0, s0, t2
+            addi t0, t0, 1
+            jal x0, loop
+        ``` 
    - How the pointers are manipulated in the assembly code.
+      ```riscv
+      addi sp, sp, -size*4
+      sw re, num*4(sp)
+      ```
+## Exercise 04
+![](lab03/ccerror.jpg)
+- What caused the errors in simple_fn, naive_pow, and inc_arr that were reported by the Venus CC checker?
+   > 1. t0 没有初始化  
+   > 2. 不能使用saved register （s0），会破坏调用者的寄存器内容
+   > 3. helper_fn修改了s0
+- In RISC-V, we call functions by jumping to them and storing the return address in the ra register. Does calling convention apply to the jumps to the naive_pow_loop or naive_pow_end labels?
+- Why do we need to store ra in the prologue for inc_arr, but not in any other function?
+- Why wasn’t the calling convention error in helper_fn reported by the CC checker? (Hint: it’s mentioned above in the exercise instructions.)

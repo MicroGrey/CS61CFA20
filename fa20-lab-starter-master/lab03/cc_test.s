@@ -55,7 +55,7 @@ main:
 # FIXME Fix the reported error in this function (you can delete lines
 # if necessary, as long as the function still returns 1 in a0).
 simple_fn:
-    mv a0, t0
+    # mv a0, t0
     li a0, 1
     ret
 
@@ -77,14 +77,14 @@ simple_fn:
 naive_pow:
     # BEGIN PROLOGUE
     # END PROLOGUE
-    li s0, 1
+    li t0, 1
 naive_pow_loop:
     beq a1, zero, naive_pow_end
-    mul s0, s0, a0
+    mul t0, t0, a0
     addi a1, a1, -1
     j naive_pow_loop
 naive_pow_end:
-    mv a0, s0
+    mv a0, t0
     # BEGIN EPILOGUE
     # END EPILOGUE
     ret
