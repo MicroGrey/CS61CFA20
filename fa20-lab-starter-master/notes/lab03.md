@@ -82,5 +82,8 @@ Find/explain the following components of this assembly file.
    > 2. 不能使用saved register （s0），会破坏调用者的寄存器内容
    > 3. helper_fn修改了s0
 - In RISC-V, we call functions by jumping to them and storing the return address in the ra register. Does calling convention apply to the jumps to the naive_pow_loop or naive_pow_end labels?
+   > 不，这是函数内部的标签，没有跳转
 - Why do we need to store ra in the prologue for inc_arr, but not in any other function?
+  > inc_arr有到别的函数的跳转，ra会改变，而别的函数执行过程中ra没有改变过
 - Why wasn’t the calling convention error in helper_fn reported by the CC checker? (Hint: it’s mentioned above in the exercise instructions.)
+  > 它没有调用其他的函数，ra不会改变
