@@ -76,16 +76,22 @@ simple_fn:
 # missing. Another hint: what does the "s" in "s0" stand for?
 naive_pow:
     # BEGIN PROLOGUE
+    addi sp, sp, -8
+    sw s0, 4(sp)
+    sw ra, 0(sp)
     # END PROLOGUE
-    li t0, 1
+    li s0, 1
 naive_pow_loop:
     beq a1, zero, naive_pow_end
-    mul t0, t0, a0
+    mul s0, s0, a0
     addi a1, a1, -1
     j naive_pow_loop
 naive_pow_end:
-    mv a0, t0
+    mv a0, s0
     # BEGIN EPILOGUE
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    addi sp, sp, 8
     # END EPILOGUE
     ret
 
@@ -100,7 +106,9 @@ inc_arr:
     #
     # FIXME What other registers need to be saved?
     #
-    addi sp, sp, -4
+    addi sp, sp, -12
+    sw s0, 8(sp)
+    sw s1, 4(sp)
     sw ra, 0(sp)
     # END PROLOGUE
     mv s0, a0 # Copy start of array to saved register
@@ -123,7 +131,9 @@ inc_arr_loop:
 inc_arr_end:
     # BEGIN EPILOGUE
     lw ra, 0(sp)
-    addi sp, sp, 4
+    lw s1, 4(sp)
+    lw s0, 8(sp)
+    addi sp, sp, 12
     # END EPILOGUE
     ret
 
@@ -137,11 +147,17 @@ inc_arr_end:
 # as appropriate.
 helper_fn:
     # BEGIN PROLOGUE
+    addi sp, sp, -8
+    sw s0, 4(sp)
+    sw ra, 0(sp)
     # END PROLOGUE
     lw t1, 0(a0)
     addi s0, t1, 1
     sw s0, 0(a0)
     # BEGIN EPILOGUE
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    addi sp, sp, 8
     # END EPILOGUE
     ret
 
