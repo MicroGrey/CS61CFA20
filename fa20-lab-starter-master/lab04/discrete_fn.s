@@ -77,6 +77,10 @@ main:
 # Think: why might having a1 be useful?
 f:
     # YOUR CODE GOES HERE!
+    addi a0, a0, 3
+    slli t0, a0, 2          # 将 a0 左移 2 位，乘以 4（因为每个数组元素是 4 字节）
+    add t0, t0, a1          # 将数组基地址（a1）加上索引偏移量（t0），得到数组元素地址
+    lw a0, 0(t0) 
 
     jr ra               # Always remember to jr ra after your function!
 
