@@ -16,6 +16,7 @@ main:
     add a0, s0, x0  # load the address of the first node into a0
 
     # load the address of the function in question into a1 (check out la on the green sheet)
+    la a1, square
     ### YOUR CODE HERE ###
 
     # issue the call to map
@@ -23,6 +24,7 @@ main:
 
     # print the list
     add a0, s0, x0
+    
     jal ra, print_list
 
     # print another newline
@@ -33,6 +35,9 @@ main:
 
 map:
     # Prologue: Make space on the stack and back-up registers
+    addi sp ,sp, -8
+    sw  ra, 0(sp)
+    sw  s0, 4(sp)
     ### YOUR CODE HERE ###
 
     beq a0, x0, done    # If we were given a null pointer (address 0), we're done.
@@ -45,30 +50,39 @@ map:
 
     # load the value of the current node into a0
     # THINK: why a0?
+    lw a0, 0(s0)
     ### YOUR CODE HERE ###
 
     # Call the function in question on that value. DO NOT use a label (be prepared to answer why).
     # What function? Recall the parameters of "map"
+    jalr ra, s1, 0
     ### YOUR CODE HERE ###
 
     # store the returned value back into the node
     # Where can you assume the returned value is?
+    sw a0, 0(s0)
     ### YOUR CODE HERE ###
 
     # Load the address of the next node into a0
     # The Address of the next node is an attribute of the current node.
     # Think about how structs are organized in memory.
+    lw a0, 4(s0)
     ### YOUR CODE HERE ###
 
     # Put the address of the function back into a1 to prepare for the recursion
     # THINK: why a1? What about a0?
+    add a1, s1, x0
     ### YOUR CODE HERE ###
 
     # recurse
+    jal ra, map
     ### YOUR CODE HERE ###
 
 done:
     # Epilogue: Restore register values and free space from the stack
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    addi sp, sp, 8
     ### YOUR CODE HERE ###
 
     jr ra # Return to caller
