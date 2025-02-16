@@ -31,21 +31,18 @@ Image *readData(char *filename) // read the data from the ppm file
 		fprintf(stderr, "Error: File not found\n");
 		exit(-1);
 	}
-	Image *image;
 	int rows, cols;
-	Color **imageData;
 	fscanf(file, "P3\n%d %d\n255\n", &cols, &rows);
-	image = malloc(sizeof(Image));
-	imageData = malloc(rows * sizeof(Color *));
+	Image *image = malloc(sizeof(Image));
+	image->image = malloc(rows * sizeof(Color *));
 	for (int i = 0; i < rows; i++)
 	{
-		imageData[i] = malloc(cols * sizeof(Color));
+		image->image[i] = malloc(cols * sizeof(Color));
 		for (int j = 0; j < cols; j++)
 		{
-			fscanf(file, "%hhu %hhu %hhu", &imageData[i][j].R, &imageData[i][j].G, &imageData[i][j].B);
+			fscanf(file, "%hhu   %hhu   %hhu", &image->image[i][j].R, &image->image[i][j].G, &image->image[i][j].B);
 		}
 	}
-	image->image = imageData;
 	image->rows = rows;
 	image->cols = cols;
 	fclose(file);
@@ -59,11 +56,10 @@ void writeData(Image *image)
 	printf("P3\n%d %d\n255\n", image->cols, image->rows);
 	for (int i = 0; i<image->rows; i++)
 	{
-		for (int j = 0; j<image->cols; j++)
-		{
-			printf("%d %d %d ", image->image[i][j].R, image->image[i][j].G, image->image[i][j].B);
+		for (int j = 0; j < image->cols-1; j++) {
+			printf("%3d %3d %3d   ", image->image[i][j].R, image->image[i][j].G, image->image[i][j].B);
 		}
-		printf("\n");
+		printf("%3d %3d %3d\n", image->image[i][image->cols-1].R, image->image[i][image->cols-1].G, image->image[i][image->cols-1].B);
 	}
 	//YOUR CODE HERE
 }
