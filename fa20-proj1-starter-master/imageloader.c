@@ -56,11 +56,26 @@ Image *readData(char *filename) // read the data from the ppm file
 //Given an image, prints to stdout (e.g. with printf) a .ppm P3 file with the image's data.
 void writeData(Image *image)
 {
+	printf("P3\n%d %d\n255\n", image->cols, image->rows);
+	for (int i = 0; i<image->rows; i++)
+	{
+		for (int j = 0; j<image->cols; j++)
+		{
+			printf("%d %d %d ", image->image[i][j].R, image->image[i][j].G, image->image[i][j].B);
+		}
+		printf("\n");
+	}
 	//YOUR CODE HERE
 }
 
 //Frees an image
 void freeImage(Image *image)
 {
+	for (int i = 0; i < image->rows; i++)
+	{
+		free(image->image[i]);
+	}
+	free(image->image);
+	free(image);
 	//YOUR CODE HERE
 }
