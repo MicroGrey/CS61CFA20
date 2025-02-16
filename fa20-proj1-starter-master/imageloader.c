@@ -23,8 +23,33 @@
 //Opens a .ppm P3 image file, and constructs an Image object. 
 //You may find the function fscanf useful.
 //Make sure that you close the file with fclose before returning.
-Image *readData(char *filename) 
+Image *readData(char *filename) // read the data from the ppm file
 {
+	FILE *file = fopen(filename, "r");
+	if (file == NULL)
+	{
+		fprintf(stderr, "Error: File not found\n");
+		exit(-1);
+	}
+	Image *image;
+	int rows, cols;
+	Color **imageData;
+	fscanf(file, "P3\n%d %d\n255\n", &cols, &rows);
+	image = malloc(sizeof(Image));
+	imageData = malloc(rows * sizeof(Color *));
+	for (int i = 0; i < rows; i++)
+	{
+		imageData[i] = malloc(cols * sizeof(Color));
+		for (int j = 0; j < cols; j++)
+		{
+			fscanf(file, "%hhu %hhu %hhu", &imageData[i][j].R, &imageData[i][j].G, &imageData[i][j].B);
+		}
+	}
+	image->image = imageData;
+	image->rows = rows;
+	image->cols = cols;
+	fclose(file);
+	return image;
 	//YOUR CODE HERE
 }
 
