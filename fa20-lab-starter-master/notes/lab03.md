@@ -1,5 +1,6 @@
 # Lab 03
 ## Venus
+[venus](https://venus.cs61c.org/)
 [venus 手册](https://web.archive.org/web/20201205153938/http://cs61c.org/resources/venus-reference#traces)
 ### The Editor Tab
 - 程序从第一行组件代码开始，无论标签如何，除非 `main` 功能用 `.globl` 标记（见下文）。这意味着如果未声明为 `.globl` ，则必须将 `main` 函数放在首位。
