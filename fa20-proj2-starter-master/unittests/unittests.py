@@ -284,8 +284,7 @@ class TestDot(TestCase):
         # call the `dot` function
         t.call("dot")
         # check the return value
-        t.check_scalar("a0", 75)
-        t.execute()
+        t.execute(code=75)
 
     def test_stride_mismatch(self):
         t = AssemblyTest(self, "dot.s")
@@ -302,8 +301,7 @@ class TestDot(TestCase):
         # call the `dot` function
         t.call("dot")
         # check the return value
-        t.check_scalar("a0", 76)
-        t.execute()
+        t.execute(code=76)
 
     @classmethod
     def tearDownClass(cls):
@@ -389,18 +387,61 @@ class TestReadMatrix(TestCase):
         cols = t.array([-1])
 
         # load the addresses to the output parameters into the argument registers
-        raise NotImplementedError("TODO")
+        # raise NotImplementedError("TODO")
+        t.input_array("a1", rows)
+        t.input_array("a2", cols)
         # TODO
 
         # call the read_matrix function
         t.call("read_matrix")
 
         # check the output from the function
+        t.check_array(rows, [3])
+        t.check_array(cols, [3])
+        t.check_array_pointer("a0", [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        # TODO
+
+        # generate assembly and run it through venus
+        t.execute(fail=fail, code=code)
+        
+    def do_read_matrix(self, fail='', code=0):
+        t = AssemblyTest(self, "read_matrix.s")
+        # load address to the name of the input file into register a0
+        t.input_read_filename("a0", "inputs/test_read_matrix/m0.bin")
+
+        # allocate space to hold the rows and cols output parameters
+        rows = t.array([-1])
+        cols = t.array([-1])
+
+        # load the addresses to the output parameters into the argument registers
+        # raise NotImplementedError("TODO")
+        t.input_array("a1", rows)
+        t.input_array("a2", cols)
+        # TODO
+
+        # call the read_matrix function
+        t.call("read_matrix")
+
+        # check the output from the function
+        t.check_array(rows, [4])
+        t.check_array(cols, [2])
+        t.check_array_pointer("a0", [11, -10, 13, 10, -23, -6, -22, 10])
         # TODO
 
         # generate assembly and run it through venus
         t.execute(fail=fail, code=code)
 
+    def test_malloc_error(self):
+        self.do_read_matrix(fail='malloc', code=88)
+    
+    def test_fopen_error(self):
+        self.do_read_matrix(fail='fopen', code=90)
+
+    def test_fread_error(self):
+        self.do_read_matrix(fail='fread', code=91)
+    
+    def test_fclose_error(self):
+        self.do_read_matrix(fail='fclose', code=92)
     def test_simple(self):
         self.do_read_matrix()
 

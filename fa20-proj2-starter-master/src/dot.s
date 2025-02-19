@@ -61,9 +61,9 @@ loop_end:
     ret
 
 length_end:
-    li a7, 75
-    ecall   
+    li a1, 75
+    j exit2  
 
 stride_end:
-    li a7, 76
-    ecall
+    li a1, 76
+    j exit2
