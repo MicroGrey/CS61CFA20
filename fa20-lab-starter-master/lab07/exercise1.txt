@@ -1,24 +1,25 @@
 Scenario 1
-    1.
-    2.
-    3.
+    1. Hit Count, Access
+    2. 0
+    3. step size, option
 
 Scenario 2
-    1.
-    2.
-    3.
+    1. 2
+    2. Miss Hit Hit Hit
+    3. 1
 
 Scenario 3
-    1.
-    2.
-    3.
-    4.
-    5.
+    1. 0.5, 0, 0.33
+    2. 32, 16
+    3. 16, when L1 hit miss, try to hit L2
+    4. increase rep count
+    5. =, =, +, =
 
 --- lines below are ignored by the AG ---
 
-Checkoff Question 1:
-Checkoff Question 2:
-Checkoff Question 3:
-Checkoff Question 4:
-Checkoff Question 5:
+Checkoff Question 1: step size equal to block size, always hit and rewrite the same place in cache
+Checkoff Question 2: step size, option
+Checkoff Question 3: one Compulsory, write 2 elements in cache, so RW can read it then.
+Checkoff Question 4: cache size = array size, full associativity in this case, the whole array stored in cache
+Checkoff Question 5: make splited array size = cache size, thus every time when hit miss, we can write elements needed in this cycle into cache. (将大数组划分为小块（如每块大小适配缓存容量），每次仅处理一个块)
+Checkoff Question 6: because in former case, we just access L2 for one cycle, by increase the rep count, L1 will be overlapped everytime, so it need to access L2, then get read hit

@@ -1,8 +1,8 @@
-1.
-2.
+1. jki, kji
+2. ikj, kij
 
 --- lines below are ignored by the AG ---
 
-Checkoff Question 1:
-Checkoff Question 2:
-Checkoff Question 3:
+Checkoff Question 1: the inner loop has the least stride, access a continous block, so write back less, hit miss less 
+Checkoff Question 2: the inner loop has the greatest stride, access a non-continous block, so write back more, hit miss more
+Checkoff Question 3: use smaller stride, so one hit miss can store the later needed memoey for us (continous elements in one block)
