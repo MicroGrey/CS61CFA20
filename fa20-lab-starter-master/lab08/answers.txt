@@ -17,3 +17,4 @@ Exercise 1 Checkoff Questions:
 
 Exercise 4 Checkoff Question:
     1.
+camera.jar跑起来有问题，不知道怎么办，，，不写了（你懂VM吗？我觉得我懂了）
