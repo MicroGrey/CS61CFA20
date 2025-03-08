@@ -60,10 +60,12 @@ void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
 int allocate_matrix(matrix **mat, int rows, int cols) {
     /* TODO: YOUR CODE HERE */
     if (cols <= 0 || rows <= 0) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     *mat = (matrix *)malloc(sizeof(matrix));
     if (*mat == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
         return -1;
     }
     (*mat)->rows = rows;
@@ -75,6 +77,7 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
     for (int i = 0; i < rows; i++) {
         (*mat)->data[i] = (double *)calloc(cols, sizeof(double));
         if ((*mat)->data[i] == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
             return -1;
         }
     }
@@ -93,9 +96,11 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int row_offset, int col_offs
     /* TODO: YOUR CODE HERE */
     *mat = (matrix *)malloc(sizeof(matrix));
     if (*mat == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
         return -1;
     }
     if (cols <= 0 || rows <= 0 || row_offset < 0 || col_offset < 0 || row_offset + rows > from->rows || col_offset + cols > from->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     (*mat)->rows = rows;
@@ -108,6 +113,7 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int row_offset, int col_offs
     for (int i = 0; i < rows; i++) {
         (*mat)->data[i] = (double *)calloc(cols, sizeof(double));
         if ((*mat)->data[i] == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
             return -1;
         }
         for (int j = 0; j < cols; j++) {
@@ -175,9 +181,11 @@ void fill_matrix(matrix *mat, double val) {
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     if (result->rows != mat1->rows || result->cols != mat1->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     int rows = mat1->rows;
@@ -198,9 +206,11 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     if (result->rows != mat1->rows || result->cols != mat1->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     int rows = mat1->rows;
@@ -222,12 +232,15 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if (mat1 == NULL || mat2 == NULL || result == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     if (mat1->cols != mat2->rows) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     if (result->rows != mat1->rows || result->cols != mat2->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     matrix *temp_result = NULL;
@@ -255,9 +268,11 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* TODO: YOUR CODE HERE */
     if (mat->rows != mat->cols || pow < 0) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -2;
     }
     if (mat->rows != result->rows || mat->cols != result->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -3;
     }
 
@@ -281,6 +296,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 int neg_matrix(matrix *result, matrix *mat) {
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     for (int i = 0; i < mat->rows; i++) {
@@ -304,6 +320,7 @@ int neg_matrix(matrix *result, matrix *mat) {
 int abs_matrix(matrix *result, matrix *mat) {
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols) {
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
         return -1;
     }
     for (int i = 0; i < mat->rows; i++) {
