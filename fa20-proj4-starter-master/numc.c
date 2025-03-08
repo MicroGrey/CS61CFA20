@@ -285,29 +285,24 @@ PyObject *Matrix61c_repr(PyObject *self) {
  * Add the second numc.Matrix (Matrix61c) object to the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
-    /* TODO: YOUR CODE HERE */
-    PyObject* mat = NULL;
-    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
-        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
-            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
-            return NULL;
-        }
-        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
-        matrix* result = NULL;
-        if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
-            return NULL;
-        }
-        if (add_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
-            return NULL;
-        }
-        mat61c->mat = result;
-        mat61c->shape = self->shape;
-        return (PyObject *)mat61c;
-    } else {
-        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+PyObject *Matrix61c_add(Matrix61c *self, PyObject *args) {
+    PyObject* mat = args;
+
+    if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
+        PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
         return NULL;
     }
+    Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    matrix* result = NULL;
+    if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+        return NULL;
+    }
+    if (add_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
+        return NULL;
+    }
+    mat61c->mat = result;
+    mat61c->shape = self->shape;
+    return (PyObject *)mat61c;
 }
 
 /*
@@ -316,27 +311,23 @@ PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
  */
 PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
-    PyObject* mat = NULL;
-    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
-        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
-            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
-            return NULL;
-        }
-        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
-        matrix* result = NULL;
-        if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
-            return NULL;
-        }
-        if (sub_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
-            return NULL;
-        }
-        mat61c->mat = result;
-        mat61c->shape = self->shape;
-        return (PyObject *)mat61c;
-    } else {
-        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+    PyObject* mat = args;
+
+    if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
+        PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
         return NULL;
     }
+    Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    matrix* result = NULL;
+    if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+        return NULL;
+    }
+    if (sub_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
+        return NULL;
+    }
+    mat61c->mat = result;
+    mat61c->shape = self->shape;
+    return (PyObject *)mat61c;
 }
 
 /*
@@ -345,27 +336,23 @@ PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
  */
 PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
     /* TODO: YOUR CODE HERE */
-    PyObject* mat = NULL;
-    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
-        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
-            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
-            return NULL;
-        }
-        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
-        matrix* result = NULL;
-        if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
-            return NULL;
-        }
-        if (mul_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
-            return NULL;
-        }
-        mat61c->mat = result;
-        mat61c->shape = self->shape;
-        return (PyObject *)mat61c;
-    } else {
-        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+    PyObject* mat = args;
+
+    if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
+        PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
         return NULL;
     }
+    Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    matrix* result = NULL;
+    if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+        return NULL;
+    }
+    if (mul_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
+        return NULL;
+    }
+    mat61c->mat = result;
+    mat61c->shape = self->shape;
+    return (PyObject *)mat61c;
 }
 
 /*

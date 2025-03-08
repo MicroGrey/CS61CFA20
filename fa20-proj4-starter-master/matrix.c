@@ -60,7 +60,7 @@ void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
 int allocate_matrix(matrix **mat, int rows, int cols) {
     /* TODO: YOUR CODE HERE */
     if (cols <= 0 || rows <= 0) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "rows or cols invalid");
         return -1;
     }
     *mat = (matrix *)malloc(sizeof(matrix));
@@ -181,11 +181,11 @@ void fill_matrix(matrix *mat, double val) {
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "mat1 and mat2 have different shapes");
         return -1;
     }
     if (result->rows != mat1->rows || result->cols != mat1->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "result has different shape");
         return -1;
     }
     int rows = mat1->rows;
@@ -206,11 +206,11 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "mat1 and mat2 have different shapes");
         return -1;
     }
     if (result->rows != mat1->rows || result->cols != mat1->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "result has different shape");
         return -1;
     }
     int rows = mat1->rows;
@@ -232,15 +232,15 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if (mat1 == NULL || mat2 == NULL || result == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "mat1, mat2 or result is NULL");
         return -1;
     }
     if (mat1->cols != mat2->rows) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "mat1 and mat2 have incompatible shapes");
         return -1;
     }
     if (result->rows != mat1->rows || result->cols != mat2->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "result has different shape");
         return -1;
     }
     matrix *temp_result = NULL;
@@ -268,11 +268,11 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* TODO: YOUR CODE HERE */
     if (mat->rows != mat->cols || pow < 0) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "mat is not a square matrix or pow is negative");
         return -2;
     }
     if (mat->rows != result->rows || mat->cols != result->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, " mat and result have different shapes");
         return -3;
     }
 
@@ -296,7 +296,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 int neg_matrix(matrix *result, matrix *mat) {
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "result has different shape");
         return -1;
     }
     for (int i = 0; i < mat->rows; i++) {
@@ -320,7 +320,7 @@ int neg_matrix(matrix *result, matrix *mat) {
 int abs_matrix(matrix *result, matrix *mat) {
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols) {
-        PyErr_SetString(PyExc_ValueError, "Invalid arguments");
+        PyErr_SetString(PyExc_ValueError, "result has different shape");
         return -1;
     }
     for (int i = 0; i < mat->rows; i++) {
