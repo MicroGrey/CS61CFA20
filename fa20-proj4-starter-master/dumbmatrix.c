@@ -50,34 +50,47 @@ void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
 /*
  * Allocate space for a matrix struct pointed to by the double pointer mat with
  * `rows` rows and `cols` columns. You should also allocate memory for the data array
- * and initialize all entries to be zeros. Remember to set all fieds of the matrix struct.
+ * and initialize all entries to be zeros. Remember to set all fields of the matrix struct.
  * `parent` should be set to NULL to indicate that this matrix is not a slice.
  * You should return -1 if either `rows` or `cols` or both have invalid values, or if any
  * call to allocate memory in this function fails. If you don't set python error messages here upon
- * failure, then remember to set it in numc.c.
+ * failure, then remember to set it in dumbpy.c.
  * Return 0 upon success and non-zero upon failure.
  */
 int allocate_matrix(matrix **mat, int rows, int cols) {
-    /* TODO: YOUR CODE HERE */
-    if (cols <= 0 || rows <= 0) {
+    // invalid cols or rows
+    if (rows <= 0 || cols <= 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
         return -1;
     }
-    *mat = (matrix *)malloc(sizeof(matrix));
+
+    *mat = (matrix *) malloc(sizeof(matrix));
     if (*mat == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
         return -1;
     }
+
     (*mat)->rows = rows;
     (*mat)->cols = cols;
+    (*mat)->data = (double **) malloc(sizeof(double *) * rows);
+    if ((*mat)->data == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
+        return -1;
+    }
+
+    double *data_array = (double *) calloc(cols * rows, sizeof(double));
+    if (data_array == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
+        return -1;
+    }
+
+    for (int i = 0; i < rows; ++i) {
+        (*mat)->data[i] = data_array + i * cols;
+    }
+
     (*mat)->is_1d = rows == 1 || cols == 1;
     (*mat)->ref_cnt = 1;
     (*mat)->parent = NULL;
-    (*mat)->data = (double **)malloc(rows * sizeof(double *));
-    for (int i = 0; i < rows; i++) {
-        (*mat)->data[i] = (double *)calloc(cols, sizeof(double));
-        if ((*mat)->data[i] == NULL) {
-            return -1;
-        }
-    }
     return 0;
 }
 
@@ -85,55 +98,58 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
  * Allocate space for a matrix struct pointed to by `mat` with `rows` rows and `cols` columns.
  * This is equivalent to setting the new matrix to be
  * from[row_offset:row_offset + rows, col_offset:col_offset + cols]
- * If you don't set python error messages here upon failure, then remember to set it in numc.c.
+ * If you don't set python error messages here upon failure, then remember to set it in dumbpy.c.
  * Return 0 upon success and non-zero upon failure.
  */
 int allocate_matrix_ref(matrix **mat, matrix *from, int row_offset, int col_offset,
                         int rows, int cols) {
-    /* TODO: YOUR CODE HERE */
-    *mat = (matrix *)malloc(sizeof(matrix));
+    if (rows <= 0 || cols <= 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
+        return -1;
+    }
+    *mat = (matrix *) malloc(sizeof(matrix));
     if (*mat == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Allocate matrix failed");
         return -1;
     }
-    if (cols <= 0 || rows <= 0 || row_offset < 0 || col_offset < 0 || row_offset + rows > from->rows || col_offset + cols > from->cols) {
-        return -1;
-    }
+
     (*mat)->rows = rows;
     (*mat)->cols = cols;
-    (*mat)->is_1d = rows == 1 || cols == 1;
-    (*mat)->ref_cnt = 1;
-    from->ref_cnt++;
-    (*mat)->parent = from;
-    (*mat)->data = (double **)malloc(rows * sizeof(double *));
-    for (int i = 0; i < rows; i++) {
-        (*mat)->data[i] = (double *)calloc(cols, sizeof(double));
-        if ((*mat)->data[i] == NULL) {
-            return -1;
-        }
-        for (int j = 0; j < cols; j++) {
-            (*mat)->data[i][j] = from->data[i + row_offset][j + col_offset];
-        }
+    (*mat)->data = from->data + row_offset;
+
+    for (int i = 0; i < rows; ++i) {
+        (*mat)->data[i] = from->data[i+row_offset] + col_offset;
     }
+
+    (*mat)->is_1d = rows == 1 || cols == 1;
+    from->ref_cnt ++;
+    (*mat)->ref_cnt = 1;
+    (*mat)->parent = from;
+
     return 0;
 }
 
 /*
- * This function will be called automatically by Python when a numc matrix loses all of its
+ * This function will be called automatically by Python when a dumbpy matrix loses all of its
  * reference pointers.
  * You need to make sure that you only free `mat->data` if no other existing matrices are also
  * referring this data array.
  * See the spec for more information.
  */
 void deallocate_matrix(matrix *mat) {
-    /* TODO: YOUR CODE HERE */
     if (mat == NULL) {
         return;
     }
-    if (mat->ref_cnt == 1) {
-        for (int i = 0; i < mat->rows; i++) {
-            free(mat->data[i]);
-        }
+    mat->ref_cnt --;
+    if (mat->ref_cnt != 0) {
+        return;
+    }
+    if (mat->parent == NULL) {
+        free(*(mat->data));
         free(mat->data);
+        free(mat);
+    } else {
+        deallocate_matrix(mat->parent);
         free(mat);
     }
 }
@@ -143,7 +159,6 @@ void deallocate_matrix(matrix *mat) {
  * You may assume `row` and `col` are valid.
  */
 double get(matrix *mat, int row, int col) {
-    /* TODO: YOUR CODE HERE */
     return mat->data[row][col];
 }
 
@@ -152,7 +167,6 @@ double get(matrix *mat, int row, int col) {
  * `col` are valid
  */
 void set(matrix *mat, int row, int col, double val) {
-    /* TODO: YOUR CODE HERE */
     mat->data[row][col] = val;
 }
 
@@ -160,10 +174,9 @@ void set(matrix *mat, int row, int col, double val) {
  * Set all entries in mat to val
  */
 void fill_matrix(matrix *mat, double val) {
-    /* TODO: YOUR CODE HERE */
-    for (int i = 0; i < mat->rows; i++) {
-        for (int j = 0; j < mat->cols; j++) {
-            set(mat, i, j, val);
+    for (int i = 0; i < mat->rows; ++i) {
+        for (int j = 0; j < mat->cols; ++j) {
+            mat->data[i][j] = val;
         }
     }
 }
@@ -173,19 +186,15 @@ void fill_matrix(matrix *mat, double val) {
  * Return 0 upon success and a nonzero value upon failure.
  */
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* TODO: YOUR CODE HERE */
     if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
-        return -1;
+        return -2;
     }
     if (result->rows != mat1->rows || result->cols != mat1->cols) {
-        return -1;
+        return -3;
     }
-    int rows = mat1->rows;
-    int cols = mat1->cols;
-    #pragma omp parallel for
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            set(result, i, j, get(mat1, i, j) + get(mat2, i, j));
+    for (int i = 0; i < result->rows; ++i) {
+        for (int j = 0; j < result->cols; ++j) {
+            result->data[i][j] = mat1->data[i][j] + mat2->data[i][j];
         }
     }
     return 0;
@@ -196,19 +205,15 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * Return 0 upon success and a nonzero value upon failure.
  */
 int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* TODO: YOUR CODE HERE */
     if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
-        return -1;
+        return -2;
     }
     if (result->rows != mat1->rows || result->cols != mat1->cols) {
-        return -1;
+        return -3;
     }
-    int rows = mat1->rows;
-    int cols = mat1->cols;
-    #pragma omp parallel for
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            set(result, i, j, get(mat1, i, j) - get(mat2, i, j));
+    for (int i = 0; i < result->rows; ++i) {
+        for (int j = 0; j < result->cols; ++j) {
+            result->data[i][j] = mat1->data[i][j] - mat2->data[i][j];
         }
     }
     return 0;
@@ -220,25 +225,18 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * Remember that matrix multiplication is not the same as multiplying individual elements.
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* TODO: YOUR CODE HERE */
-    if (mat1 == NULL || mat2 == NULL || result == NULL) {
-        return -1;
-    }
     if (mat1->cols != mat2->rows) {
-        return -1;
+        return -2;
     }
     if (result->rows != mat1->rows || result->cols != mat2->cols) {
-        return -1;
+        return -3;
     }
     matrix *temp_result = NULL;
     allocate_matrix(&temp_result, result->rows, result->cols);
-    int rows = mat1->rows;
-    int cols = mat1->cols;
-    #pragma omp parallel for
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            for (int k = 0; k < cols; k++) {
-                set(temp_result, i, j, get(temp_result, i, j) + get(mat1, i, k) * get(mat2, k, j));
+    for (int i = 0; i < result->rows; ++i) {
+        for (int k = 0; k < mat1->cols; ++k) {
+            for (int j = 0; j < result->cols; ++j) {
+                temp_result->data[i][j] += mat1->data[i][k] * mat2->data[k][j];
             }
         }
     }
@@ -253,7 +251,6 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * Remember that pow is defined with matrix multiplication, not element-wise multiplication.
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
-    /* TODO: YOUR CODE HERE */
     if (mat->rows != mat->cols || pow < 0) {
         return -2;
     }
@@ -261,14 +258,15 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         return -3;
     }
 
-    fill_matrix(result, 0);
-    for (int i = 0; i < mat->rows; i++) {
-        set(result, i, i, 1);
+    for (int i = 0; i < result->rows; ++i) {
+        for (int j = 0; j < result->cols; ++j) {
+            result->data[i][j] = i == j;
+        }
     }
-    for (int i = 0; i < pow; i++) {
-        int errorcode = mul_matrix(result, result, mat);
-        if (errorcode != 0) {
-            return errorcode;
+    int error_code = 0;
+    for (int i = 0; i < pow; ++i) {
+        if ((error_code = mul_matrix(result, result, mat)) != 0) {
+            return error_code;
         }
     }
     return 0;
@@ -279,13 +277,12 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
  * Return 0 upon success and a nonzero value upon failure.
  */
 int neg_matrix(matrix *result, matrix *mat) {
-    /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols) {
-        return -1;
+        return -2;
     }
-    for (int i = 0; i < mat->rows; i++) {
-        for (int j = 0; j < mat->cols; j++) {
-            set(result, i, j, -get(mat, i, j));
+    for (int i = 0; i < result->rows; ++i) {
+        for (int j = 0; j < result->cols; ++j) {
+            result->data[i][j] = -mat->data[i][j];
         }
     }
     return 0;
@@ -295,22 +292,15 @@ int neg_matrix(matrix *result, matrix *mat) {
  * Store the result of taking the absolute value element-wise to `result`.
  * Return 0 upon success and a nonzero value upon failure.
  */
- double absolute(double num) {
-    if (num < 0) {
-        return -num;
-    }
-    return num;
- }
 int abs_matrix(matrix *result, matrix *mat) {
-    /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols) {
-        return -1;
+        return -2;
     }
-    for (int i = 0; i < mat->rows; i++) {
-        for (int j = 0; j < mat->cols; j++) {
-            set(result, i, j, absolute(get(mat, i, j)));
+    for (int i = 0; i < result->rows; ++i) {
+        for (int j = 0; j < result->cols; ++j) {
+            double temp;
+            result->data[i][j] = ((temp = mat->data[i][j]) < 0) ? -temp : temp;
         }
     }
     return 0;
 }
-
