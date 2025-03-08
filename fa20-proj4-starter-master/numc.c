@@ -286,6 +286,7 @@ PyObject *Matrix61c_repr(PyObject *self) {
  * self, and the second operand can be obtained by casting `args`.
  */
 PyObject *Matrix61c_add(Matrix61c *self, PyObject *args) {
+    /* TODO: YOUR CODE HERE */
     PyObject* mat = args;
 
     if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
@@ -496,6 +497,7 @@ PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
  * You might find this link helpful: https://docs.python.org/3.6/c-api/structures.html
  */
 PyMethodDef Matrix61c_methods[] = {
+    /* TODO: YOUR CODE HERE */
     {
         "get", 
         (PyCFunction)Matrix61c_get_value, 
@@ -508,7 +510,6 @@ PyMethodDef Matrix61c_methods[] = {
         METH_VARARGS, 
         "Set the value at specified (row, col) in the matrix"
     },
-    /* TODO: YOUR CODE HERE */
     {NULL, NULL, 0, NULL}
 };
 
@@ -519,16 +520,96 @@ PyMethodDef Matrix61c_methods[] = {
  */
 PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
     /* TODO: YOUR CODE HERE */
-    int col, row;
-    if (PyArg_ParseTuple(key, "ii", &row, &col)) {
-        PyObject* py_float = Matrix61c_get_value(self, key);
-        return py_float;
-    }
-    if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
-        PyErr_SetString(PyExc_IndexError, "Row or column index out of bounds");
-        return NULL;
+    // 处理元组索引（如 matrix[i, j] 或 matrix[start:end, step]）
+    if (PyTuple_Check(key)) {
+        Py_ssize_t size = PyTuple_GET_SIZE(key);
+        if (size != 2) {
+            PyErr_SetString(PyExc_IndexError, "Matrix subscript must have exactly two dimensions");
+            return NULL;
+        }
+
+        PyObject* row_key = PyTuple_GetItem(key, 0);
+        PyObject* col_key = PyTuple_GetItem(key, 1);
+
+        // 解析行和列索引
+        int row_start, row_end, row_step;
+        int col_start, col_end, col_step;
+        if (parse_slice(row_key, self->mat->rows, &row_start, &row_end, &row_step) != 0 ||
+            parse_slice(col_key, self->mat->cols, &col_start, &col_end, &col_step) != 0) {
+            return NULL;  // parse_slice 已设置异常
+        }
+
+        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+        matrix* mat = NULL;
+        if (allocate_matrix_ref(&mat, self->mat, row_start, col_start, row_end - row_start, col_end - col_start)) {
+            return NULL;
+        }
+        Py_INCREF(self);
+        mat61c->mat = mat;
+        mat61c->shape = get_shape(mat->rows, mat->cols);
+        return (PyObject*)mat61c;
+    // 处理单索引（如 matrix[i] 或 matrix[start:end:step]）
+    } else {
+        int start, end, step;
+        if (parse_slice(key, self->mat->rows, &start, &end, &step) != 0) {
+            return NULL;
+        }
+
+        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+        matrix* mat = NULL;
+        if (allocate_matrix_ref(&mat, self->mat, start, 0, end - start, self->mat->cols)) {
+            return NULL;
+        }
+        Py_INCREF(self);
+        mat61c->mat = mat;
+        mat61c->shape = get_shape(mat->rows, mat->cols);
+        return (PyObject*)mat61c;
     }
     
+}
+
+// 辅助函数：解析切片或整数索引
+int parse_slice(PyObject* key, int dim_size, int* start, int* end, int* step) {
+    if (PyIndex_Check(key)) {  // 处理整数索引
+        int index = PyLong_AsLong(key);
+        if (index < 0) index += dim_size;  // 支持负索引
+        if (index < 0 || index >= dim_size) {
+            PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+            return -1;
+        }
+        *start = index;
+        *end = index + 1;
+        *step = 1;
+    } else if (PySlice_Check(key)) {  // 处理切片
+        Py_ssize_t slice_start, slice_end, slice_step;
+        if (PySlice_Unpack(key, &slice_start, &slice_end, &slice_step) < 0) {
+            return -1;
+        }
+        // 处理负步长（需要额外检查）
+        if (slice_step != 1) {
+            PyErr_SetString(PyExc_NotImplementedError, "Step other than 1 is not supported");
+            return -1;
+        }
+        // 调整索引到有效范围
+        *start = clamp_index(slice_start, dim_size);
+        *end = clamp_index(slice_end, dim_size);
+        *step = slice_step;
+    } else {  // 不支持的类型
+        PyErr_SetString(PyExc_TypeError, "Indices must be integers or slices");
+        return -1;
+    }
+    return 0;
+}
+
+// 辅助函数：将 Python 切片索引转换为有效范围
+int clamp_index(Py_ssize_t idx, int dim_size) {
+    if (idx < 0) {
+        idx += dim_size;
+        return (idx < 0) ? 0 : idx;
+    } else if (idx > dim_size) {
+        return dim_size;
+    }
+    return idx;
 }
 
 /*
@@ -536,6 +617,114 @@ PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
  */
 int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) {
     /* TODO: YOUR CODE HERE */
+    // 处理元组索引（如 matrix[i, j] 或 matrix[start:end, step]）
+    if (PyTuple_Check(key)) {
+        Py_ssize_t size = PyTuple_GET_SIZE(key);
+        if (size != 2) {
+            PyErr_SetString(PyExc_IndexError, "Matrix subscript must have exactly two dimensions");
+            return -1;
+        }
+
+        PyObject* row_key = PyTuple_GetItem(key, 0);
+        PyObject* col_key = PyTuple_GetItem(key, 1);
+
+        // 解析行和列索引
+        int row_start, row_end, row_step;
+        int col_start, col_end, col_step;
+        if (parse_slice(row_key, self->mat->rows, &row_start, &row_end, &row_step) != 0 ||
+            parse_slice(col_key, self->mat->cols, &col_start, &col_end, &col_step) != 0) {
+            return -1;  // parse_slice 已设置异常
+        }
+
+        int row_size = row_end - row_start;
+        int col_size = col_end - col_start;
+        if (row_size == 1 && col_size == 1) {  // 单元素索引
+            double val;
+            if (PyFloat_Check(v)) {
+                val = PyFloat_AsDouble(v);
+            } else if (PyLong_Check(v)) {
+                val = (double)PyLong_AsLong(v);
+            } else {
+                PyErr_SetString(PyExc_TypeError, "Value must be a float or integer");
+                return -1;
+            }
+            if (row_start < 0 || row_start >= self->mat->rows || col_start < 0 || col_start >= self->mat->cols) {
+                PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+                return -1;
+            }
+            set(self->mat, row_start, col_start, val);
+            return 0;
+        } else {  // 切片索引
+            if (!PyList_Check(v)) {
+                PyErr_SetString(PyExc_TypeError, "Value must be a list");
+                return -1;
+            }
+            if (row_size * col_size != PyList_Size(v)) {
+                PyErr_SetString(PyExc_ValueError, "Incorrect number of elements in list");
+                return -1;
+            }
+            int count = 0;
+            for (int i = row_start; i < row_end; i++) {
+                for (int j = col_start; j < col_end; j++) {
+                    double val;
+                    PyObject* py_val = PyList_GetItem(v, count);
+                    if (PyFloat_Check(py_val)) {
+                        val = PyFloat_AsDouble(py_val);
+                    } else if (PyLong_Check(py_val)) {
+                        val = (double)PyLong_AsLong(py_val);
+                    } else {
+                        PyErr_SetString(PyExc_TypeError, "Value must be a float or integer");
+                        return -1;
+                    }
+                    set(self->mat, i, j, val);
+                    count++;
+                }
+            }
+            return 0;
+        }
+    // 处理单索引（如 matrix[i] 或 matrix[start:end:step]）
+    } else {
+        int row_idx = PyLong_AsLong(key);
+        if (row_idx < 0 || row_idx >= self->mat->rows) {
+            PyErr_SetString(PyExc_IndexError, "Row index out of range");
+            return -1;
+        }
+
+        if (self->mat->is_1d == 1) {  // **单列矩阵：允许 `mat[i] = x`**
+            double val;
+            if (PyFloat_Check(v)) {
+                val = PyFloat_AsDouble(v);
+            } else if (PyLong_Check(v)) {
+                val = (double)PyLong_AsLong(v);
+            } else if (PyList_Check(v) && PyList_Size(v) == 1) {
+                PyObject* value = PyList_GetItem(v, 0);
+                val = PyFloat_AsDouble(value);
+            } else {
+                PyErr_SetString(PyExc_TypeError, "Value must be a float, integer, or a single-element list");
+                return -1;
+            }
+            set(self->mat, row_idx, 0, val);
+            return 0;
+        }
+
+        if (!PyList_Check(v)) {
+            PyErr_SetString(PyExc_TypeError, "Expected a list for row assignment");
+            return -1;
+        }
+        if (PyList_Size(v) != self->mat->cols) {
+            PyErr_SetString(PyExc_ValueError, "Row dimension mismatch");
+            return -1;
+        }
+
+        for (int j = 0; j < self->mat->cols; j++) {
+            PyObject* value = PyList_GetItem(v, j);
+            double val = PyFloat_AsDouble(value);
+            if (PyErr_Occurred()) return -1;
+            set(self->mat, row_idx, j, val);
+        }
+        return 0;
+
+    }
 }
 
 PyMappingMethods Matrix61c_mapping = {
