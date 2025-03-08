@@ -1,4 +1,5 @@
 #include "omp_apps.h"
+#include <omp.h>
 
 /* -------------------------------Utilties, Do Not Modify------------------------------*/
 double* gen_array(int n) {
@@ -35,10 +36,14 @@ void v_add_naive(double* x, double* y, double* z) {
 void v_add_optimized_adjacent(double* x, double* y, double* z) {
   // TODO: Modify this function
   // Do NOT use the `for` directive here!
+  int thread_num = omp_get_num_threads();
   #pragma omp parallel
   {
-    for(int i=0; i<ARRAY_SIZE; i++)
-      z[i] = x[i] + y[i];
+    int thread_id = omp_get_thread_num();
+    for(int i=0; i<ARRAY_SIZE; i++){
+      if (i % thread_num == thread_id)
+        z[i] = x[i] + y[i];
+    }
   }
 }
 
@@ -46,10 +51,16 @@ void v_add_optimized_adjacent(double* x, double* y, double* z) {
 void v_add_optimized_chunks(double* x, double* y, double* z) {
   // TODO: Modify this function
   // Do NOT use the `for` directive here!
+  
+  int thread_num = omp_get_num_threads();
+  int chunk_size = (double)ARRAY_SIZE / thread_num + 1;
   #pragma omp parallel
   {
-    for(int i=0; i<ARRAY_SIZE; i++)
-      z[i] = x[i] + y[i];
+    int thread_id = omp_get_thread_num();
+    for(int i=(thread_id)*chunk_size; i<(thread_id + 1)*chunk_size; i++){
+      if (i < ARRAY_SIZE)
+        z[i] = x[i] + y[i];
+    }
   }
 }
 // END PART 1 EX 2
@@ -75,10 +86,15 @@ double dotp_manual_optimized(double* x, double* y, int arr_size) {
   double global_sum = 0.0;
   #pragma omp parallel
   {
+    double local_sum = 0.0;
     #pragma omp for
-    for (int i = 0; i < arr_size; i++)
+    for (int i = 0; i < arr_size; i++) {
+      local_sum += x[i] * y[i];
+  }
       #pragma omp critical
-      global_sum += x[i] * y[i];
+      {
+        global_sum += local_sum;
+      }
   }
   return global_sum;
 }
@@ -90,9 +106,8 @@ double dotp_reduction_optimized(double* x, double* y, int arr_size) {
   double global_sum = 0.0;
   #pragma omp parallel
   {
-    #pragma omp for
+    #pragma omp for reduction(+:global_sum)
     for (int i = 0; i < arr_size; i++)
-      #pragma omp critical
       global_sum += x[i] * y[i];
   }
   return global_sum;
