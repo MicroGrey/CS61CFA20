@@ -287,6 +287,27 @@ PyObject *Matrix61c_repr(PyObject *self) {
  */
 PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    PyObject* mat = NULL;
+    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
+        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
+            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+            return NULL;
+        }
+        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+        matrix* result = NULL;
+        if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+            return NULL;
+        }
+        if (add_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
+            return NULL;
+        }
+        mat61c->mat = result;
+        mat61c->shape = self->shape;
+        return (PyObject *)mat61c;
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+        return NULL;
+    }
 }
 
 /*
@@ -295,6 +316,27 @@ PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
  */
 PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    PyObject* mat = NULL;
+    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
+        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
+            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+            return NULL;
+        }
+        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+        matrix* result = NULL;
+        if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+            return NULL;
+        }
+        if (sub_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
+            return NULL;
+        }
+        mat61c->mat = result;
+        mat61c->shape = self->shape;
+        return (PyObject *)mat61c;
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+        return NULL;
+    }
 }
 
 /*
@@ -303,6 +345,27 @@ PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
  */
 PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
     /* TODO: YOUR CODE HERE */
+    PyObject* mat = NULL;
+    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
+        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
+            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+            return NULL;
+        }
+        Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+        matrix* result = NULL;
+        if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+            return NULL;
+        }
+        if (mul_matrix(result, self->mat, ((Matrix61c *)mat)->mat)){
+            return NULL;
+        }
+        mat61c->mat = result;
+        mat61c->shape = self->shape;
+        return (PyObject *)mat61c;
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+        return NULL;
+    }
 }
 
 /*
@@ -310,6 +373,17 @@ PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
  */
 PyObject *Matrix61c_neg(Matrix61c* self) {
     /* TODO: YOUR CODE HERE */
+    Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    matrix* result = NULL;
+    if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+        return NULL;
+    }
+    if (neg_matrix(result, self->mat)) {
+        return NULL;
+    }
+    mat61c->mat = result;
+    mat61c->shape = self->shape;
+    return (PyObject *)mat61c;
 }
 
 /*
@@ -317,6 +391,17 @@ PyObject *Matrix61c_neg(Matrix61c* self) {
  */
 PyObject *Matrix61c_abs(Matrix61c *self) {
     /* TODO: YOUR CODE HERE */
+    Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    matrix* result = NULL;
+    if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+        return NULL;
+    }
+    if (abs_matrix(result, self->mat)) {
+        return NULL;
+    }
+    mat61c->mat = result;
+    mat61c->shape = self->shape;
+    return (PyObject *)mat61c;
 }
 
 /*
@@ -324,6 +409,22 @@ PyObject *Matrix61c_abs(Matrix61c *self) {
  */
 PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
     /* TODO: YOUR CODE HERE */
+    Matrix61c* mat61c = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    matrix* result = NULL;
+    if (allocate_matrix(&result, self->mat->rows, self->mat->cols)){
+        return NULL;
+    }
+    if (!PyLong_Check(pow)) {
+        PyErr_SetString(PyExc_TypeError, "pow must be an integer");
+        return NULL;
+    }
+    int exponent = (int)PyLong_AsLong(pow);
+    if (pow_matrix(result, self->mat, exponent)) {
+        return NULL;
+    }
+    mat61c->mat = result;
+    mat61c->shape = self->shape;
+    return (PyObject *)mat61c;
 }
 
 /*
@@ -332,6 +433,15 @@ PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
  */
 PyNumberMethods Matrix61c_as_number = {
     /* TODO: YOUR CODE HERE */
+    .nb_add = (binaryfunc)Matrix61c_add,
+    .nb_subtract = (binaryfunc)Matrix61c_sub,
+    .nb_multiply = (binaryfunc)Matrix61c_multiply,
+    .nb_negative = (unaryfunc)Matrix61c_neg,
+    .nb_absolute = (unaryfunc)Matrix61c_abs,
+    .nb_power = (ternaryfunc)Matrix61c_pow,
+    .nb_inplace_add = NULL,    // 不实现就地加法 +=
+    .nb_inplace_subtract = NULL,
+    .nb_inplace_multiply = NULL
 };
 
 
@@ -343,6 +453,32 @@ PyNumberMethods Matrix61c_as_number = {
  */
 PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    int col, row;
+    PyObject* py_val;
+    if (!PyArg_ParseTuple(args, "iiO", &row, &col, &py_val)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments. Expected: (int row, int col, float/int value)");
+        return NULL;
+    }
+    if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
+        PyErr_SetString(PyExc_IndexError, "Row or column index out of bounds");
+        return NULL;
+    }
+    double val;
+    if (PyFloat_Check(py_val)) {
+        val = PyFloat_AsDouble(py_val);
+    } else if (PyLong_Check(py_val)) {
+        val = (double)PyLong_AsLong(py_val);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Value must be a float or integer");
+        return NULL;
+    }
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    set(self->mat, row, col, val);
+    Py_INCREF(Py_None);
+    return Py_None;
+
 }
 
 /*
@@ -352,6 +488,18 @@ PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
  */
 PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    int col, row;
+    if (!PyArg_ParseTuple(args, "ii", &row, &col)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments. Expected: (int row, int col, float/int value)");
+        return NULL;
+    }
+    if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
+        PyErr_SetString(PyExc_IndexError, "Row or column index out of bounds");
+        return NULL;
+    }
+    double val = get(self->mat, row, col);
+    PyObject* py_float = PyFloat_FromDouble(val);
+    return py_float;
 }
 
 /*
@@ -361,6 +509,18 @@ PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
  * You might find this link helpful: https://docs.python.org/3.6/c-api/structures.html
  */
 PyMethodDef Matrix61c_methods[] = {
+    {
+        "get", 
+        (PyCFunction)Matrix61c_get_value, 
+        METH_VARARGS, 
+        "Get the value at specified (row, col) in the matrix"
+    },
+    {
+        "set", 
+        (PyCFunction)Matrix61c_set_value, 
+        METH_VARARGS, 
+        "Set the value at specified (row, col) in the matrix"
+    },
     /* TODO: YOUR CODE HERE */
     {NULL, NULL, 0, NULL}
 };
@@ -372,6 +532,16 @@ PyMethodDef Matrix61c_methods[] = {
  */
 PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
     /* TODO: YOUR CODE HERE */
+    int col, row;
+    if (PyArg_ParseTuple(key, "ii", &row, &col)) {
+        PyObject* py_float = Matrix61c_get_value(self, key);
+        return py_float;
+    }
+    if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
+        PyErr_SetString(PyExc_IndexError, "Row or column index out of bounds");
+        return NULL;
+    }
+    
 }
 
 /*

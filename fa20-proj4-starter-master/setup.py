@@ -9,7 +9,7 @@ def main():
     # TODO: YOUR CODE HERE
     module = Extension(
         'numc',
-        sources=['numc.c'],
+        sources=['numc.c', 'matrix.c'],
         extra_compile_args=CFLAGS,
         extra_link_args=LDFLAGS 
     )
